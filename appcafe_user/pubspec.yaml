@@ -1,0 +1,59 @@
+name: appcafe_user
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Firebase (FlutterFire) – phiên bản mới nhất ổn định
+  firebase_core: ^3.4.0
+  firebase_auth: ^5.3.0
+  cloud_firestore: ^5.4.0
+  firebase_storage: ^12.1.0
+
+  # Đăng nhập Google
+  google_sign_in: ^6.2.1
+
+  # HTTP / Retrofit
+  dio: ^5.4.0
+  retrofit: ^4.1.0
+  json_annotation: ^4.9.0
+
+  # Cloudinary upload
+  cloudinary_public: ^0.23.1
+
+
+  # Gửi email
+  mailer: ^6.1.0
+
+  shared_preferences: ^2.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  build_runner: ^2.4.10
+  retrofit_generator: ^8.1.1
+  json_serializable: ^6.8.0
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Nếu có asset hãy bỏ comment bên dưới:
+  # assets:
+  #   - assets/images/
+  #   - assets/icons/
+
+  # fonts:
+  #   - family: MyFont
+  #     fonts:
+  #       - asset: assets/fonts/MyFont-Regular.ttf
