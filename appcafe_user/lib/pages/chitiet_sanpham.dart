@@ -112,7 +112,7 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text("Số lượng", style: TextStyle(color: Colors.grey)),
-                    Text("Tổng tiền: ${tongTien}đ",
+                    Text("Tổng tiền: $tongTienđ",
                         style: const TextStyle(
                             fontSize: 20,
                             color: Colors.blue,

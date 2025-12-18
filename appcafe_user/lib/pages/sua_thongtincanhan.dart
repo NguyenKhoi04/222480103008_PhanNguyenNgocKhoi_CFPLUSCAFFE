@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class SuaThongTinCaNhan extends StatefulWidget {
+  const SuaThongTinCaNhan({super.key});
+
   @override
   State<SuaThongTinCaNhan> createState() => _SuaThongTinCaNhanState();
 }

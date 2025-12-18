@@ -117,7 +117,7 @@ class _trang_dangkyState extends State<trang_dangky> {
       }
       if (!mounted) return;
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException {
       _failedAttempts++;
       _prefs?.setInt('failedAttempts', _failedAttempts);
       _showMsg('Sai thông tin! Lần thứ $_failedAttempts');
