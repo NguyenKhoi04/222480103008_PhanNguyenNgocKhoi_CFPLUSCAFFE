@@ -20,10 +20,18 @@ class _TabTwoBestSellerState extends State<TabTwoBestSeller> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              titleText("BEST SELLER"),
-              buildCategory("SanPham", "CaFe", "Cafe"),
-              buildCategory("SanPham", "Trà sữa", "trasua"),
-              buildCategory("SanPham", "Matcha", "matcha"),
+              const Padding(
+                padding: EdgeInsets.all(8),
+                child: Text(
+                  "BEST SELLER",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.brown,
+                  ),
+                ),
+              ),
+              buildBestSellerList(),
             ],
           ),
         ),
@@ -31,60 +39,42 @@ class _TabTwoBestSellerState extends State<TabTwoBestSeller> {
     );
   }
 
-  // Tiêu đề danh mục
-  Widget titleText(String text) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.brown,
-        ),
-      ),
+  Widget buildBestSellerList() {
+    return FutureBuilder(
+      future: db.collection("SanPham").doc("BestSeller").collection("BestSeller").get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final data = snapshot.data!.docs;
+        if (data.isEmpty) {
+          return const Center(child: Text("Chưa có sản phẩm Best Seller"));
+        }
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.75,
+          ),
+          itemCount: data.length,
+          itemBuilder: (context, index) {
+            final item = data[index];
+            final ten = item['Ten'] ?? '';
+            final gia = item['Gia'] ?? '';
+            final hinh = item['hinhAnh'] ?? '';
+
+            return productCard(ten: ten, gia: gia, hinh: hinh);
+          },
+        );
+      },
     );
   }
 
-  // Load danh mục sản phẩm
-  Widget buildCategory(String root, String docName, String collectionName) {
-    return SizedBox(
-      height: 220,
-      child: FutureBuilder(
-        future: db
-            .collection(root)
-            .doc(docName)
-            .collection(collectionName)
-            .get(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final data = snapshot.data!.docs;
-
-          return ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: data.length,
-            itemBuilder: (context, i) {
-              final item = data[i];
-              final ten = item['Ten'];
-              final gia = item['Gia'];
-              final hinh = item['hinhAnh'];
-
-              return productCard(
-                ten: ten,
-                gia: gia,
-                hinh: hinh,
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  // Card sản phẩm
   Widget productCard({required String ten, required String gia, required String hinh}) {
     return GestureDetector(
       onTap: () {
@@ -94,31 +84,45 @@ class _TabTwoBestSellerState extends State<TabTwoBestSeller> {
           arguments: {
             'ten': ten,
             'gia': gia,
-            'hinh': hinh,
+            'hinhAnh': hinh,
           },
         );
       },
-      child: Container(
-        width: 150,
-        margin: const EdgeInsets.only(right: 12),
+      child: Card(
+        elevation: 2,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                hinh,
-                width: 150,
-                height: 150,
-                fit: BoxFit.cover,
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                child: Image.network(
+                  hinh,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
+                ),
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              ten,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ten,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "$gia đ",
+                    style: const TextStyle(fontSize: 13, color: Colors.brown, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             ),
-            Text("$gia đ",
-                style: const TextStyle(fontSize: 15, color: Colors.grey)),
           ],
         ),
       ),

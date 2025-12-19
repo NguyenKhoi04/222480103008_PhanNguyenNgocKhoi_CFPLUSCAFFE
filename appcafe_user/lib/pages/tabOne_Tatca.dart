@@ -101,8 +101,7 @@ class _TabOneTatCaState extends State<TabOneTatCa> {
           arguments: {
             'ten': ten,
             'gia': gia,
-            'hinh': hinh,
-            'mota': '', // nếu có thì truyền thêm
+            'hinhAnh': hinh,
           },
         );
       },

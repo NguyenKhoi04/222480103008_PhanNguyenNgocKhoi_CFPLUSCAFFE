@@ -11,11 +11,11 @@ class FragmentAccount extends StatefulWidget {
 }
 
 class _FragmentAccountState extends State<FragmentAccount> {
-  String hoTen = '';
-  String ngaySinh = '';
-  String gioiTinh = '';
-  String email = '';
-  String soDienThoai = '';
+  String hoTen = "";
+  String ngaySinh = "";
+  String gioiTinh = "";
+  String email = "";
+  String soDienThoai = "";
 
   @override
   void initState() {
@@ -35,11 +35,11 @@ class _FragmentAccountState extends State<FragmentAccount> {
 
       if (doc.exists) {
         setState(() {
-          hoTen = doc.get("Họ tên NV") ?? '';
-          gioiTinh = doc.get("Giới tính") ?? '';
-          email = doc.get("Email") ?? user.email ?? '';
-          soDienThoai = doc.get("Số điện thoại") ?? '';
-          
+          hoTen = doc.get("Họ tên NV") ?? "";
+          gioiTinh = doc.get("Giới tính") ?? "";
+          email = doc.get("Email") ?? user.email ?? "";
+          soDienThoai = doc.get("Số điện thoại") ?? "";
+
           var ngaySinhData = doc.get("Ngày sinh");
           if (ngaySinhData != null) {
             if (ngaySinhData is Timestamp) {
@@ -51,11 +51,11 @@ class _FragmentAccountState extends State<FragmentAccount> {
         });
       } else {
         setState(() {
-          email = user.email ?? '';
+          email = user.email ?? "";
         });
       }
     } catch (e) {
-      print('Lỗi load dữ liệu: $e');
+      print("Lỗi load data: $e");
     }
   }
 
@@ -70,7 +70,7 @@ class _FragmentAccountState extends State<FragmentAccount> {
             // --- Tiêu đề ---
             Container(
               padding: const EdgeInsets.all(12),
-              color: const Color(0xFFFFEEDB), // màu kem tương tự Android
+              color: const Color(0xFFFFEEDB),
               child: const Text(
                 "THÔNG TIN NHÂN VIÊN",
                 textAlign: TextAlign.center,
@@ -84,58 +84,23 @@ class _FragmentAccountState extends State<FragmentAccount> {
             const SizedBox(height: 20),
 
             // --- Họ tên ---
-            const Text(
-              "Họ Tên:",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              hoTen.isEmpty ? "Chưa có thông tin" : hoTen,
-              style: const TextStyle(fontSize: 18),
-            ),
+            _buildInfoRow("Họ Tên:", hoTen.isEmpty ? "Chưa cập nhật" : hoTen),
 
             // --- Ngày sinh ---
             const SizedBox(height: 10),
-            const Text(
-              "Ngày sinh:",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              ngaySinh.isEmpty ? "Chưa có thông tin" : ngaySinh,
-              style: const TextStyle(fontSize: 18),
-            ),
+            _buildInfoRow("Ngày sinh:", ngaySinh.isEmpty ? "Chưa cập nhật" : ngaySinh),
 
             // --- Giới tính ---
             const SizedBox(height: 10),
-            const Text(
-              "Giới tính:",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              gioiTinh.isEmpty ? "Chưa có thông tin" : gioiTinh,
-              style: const TextStyle(fontSize: 18),
-            ),
+            _buildInfoRow("Giới tính:", gioiTinh.isEmpty ? "Chưa cập nhật" : gioiTinh),
 
             // --- Email ---
             const SizedBox(height: 10),
-            const Text(
-              "Email:",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              email.isEmpty ? "Chưa có thông tin" : email,
-              style: const TextStyle(fontSize: 18),
-            ),
+            _buildInfoRow("Email:", email.isEmpty ? "Chưa cập nhật" : email),
 
             // --- Số điện thoại ---
             const SizedBox(height: 10),
-            const Text(
-              "Số điện thoại:",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              soDienThoai.isEmpty ? "Chưa có thông tin" : soDienThoai,
-              style: const TextStyle(fontSize: 18),
-            ),
+            _buildInfoRow("Số điện thoại:", soDienThoai.isEmpty ? "Chưa cập nhật" : soDienThoai),
 
             const SizedBox(height: 30),
 
@@ -144,10 +109,11 @@ class _FragmentAccountState extends State<FragmentAccount> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B4513), // màu brown
+                  backgroundColor: const Color(0xFF8B4513),
                 ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/suaThongTin');
+                onPressed: () async {
+                  await Navigator.pushNamed(context, '/suaThongTin');
+                  loadData(); // Reload sau khi sửa
                 },
                 child: const Text(
                   "SỬA THÔNG TIN CÁ NHÂN",
@@ -161,6 +127,23 @@ class _FragmentAccountState extends State<FragmentAccount> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 18),
+        ),
+      ],
     );
   }
 }

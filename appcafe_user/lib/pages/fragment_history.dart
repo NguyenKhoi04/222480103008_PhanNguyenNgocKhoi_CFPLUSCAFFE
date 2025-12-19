@@ -19,7 +19,6 @@ class _FragmentHistoryState extends State<FragmentHistory> {
     loadDonHang();
   }
 
-
   // ====== Lấy dữ liệu Firestore giống Java ======
   void loadDonHang() async {
     final snapshot = await FirebaseFirestore.instance
@@ -38,9 +37,9 @@ class _FragmentHistoryState extends State<FragmentHistory> {
         "da": doc["Mức đá"],
         "soLuong": doc["Số lượng"],
         "tongTien": doc["Tổng tiền"],
-        "hinhThuc": doc["Hình thức"] ?? doc["hình thức"] ?? '',
-        "trangThai": doc["trangthaithanhtoan"] ?? "Chưa thanh toán",
-        "hinhAnh": doc["hinhAnh"] ?? '',
+        "hinhThuc": doc["Hình thức"] ?? doc["hình thức"] ?? "",
+        "trangThai": doc["trangthaithanhtoan"],
+        "hinhAnh": doc["Hình ảnh"] ?? doc["hinhAnh"] ?? "",
       });
     }
 

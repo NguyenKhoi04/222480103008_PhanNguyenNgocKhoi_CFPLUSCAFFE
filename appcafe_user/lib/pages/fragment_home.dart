@@ -158,9 +158,9 @@ class _FragmentHomeState extends State<FragmentHome>
           onTap: () {
             Navigator.pushNamed(context, "/chitiet",
                 arguments: {
-                  "Ten": sp["Ten"] ?? "",
-                  "Gia": sp["Gia"] ?? "",
-                  "hinhAnh": sp["hinhAnh"] ?? ""
+                  "Ten": sp["Ten"],
+                  "Gia": sp["Gia"],
+                  "hinhAnh": sp["hinhAnh"]
                 });
           },
           child: Card(

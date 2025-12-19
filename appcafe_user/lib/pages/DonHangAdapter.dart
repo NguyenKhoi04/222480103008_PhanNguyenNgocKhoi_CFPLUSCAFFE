@@ -83,27 +83,27 @@ class _DonHangWidgetState extends State<DonHangWidget> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text("Cập nhật trạng thái"),
-          content: Row(
-            children: [
-              Checkbox(
-                value: checked,
-                onChanged: (v) {
-                  checked = v!;
-                  setState(() {});
-                },
-              ),
-              const Text("Đã thanh toán"),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Hủy"),
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) => AlertDialog(
+            title: const Text("Cập nhật trạng thái"),
+            content: Row(
+              children: [
+                Checkbox(
+                  value: checked,
+                  onChanged: (v) {
+                    setDialogState(() => checked = v!);
+                  },
+                ),
+                const Text("Đã thanh toán"),
+              ],
             ),
-            TextButton(
-              onPressed: () async {
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Hủy"),
+              ),
+              TextButton(
+                onPressed: () async {
                 final newStatus =
                     checked ? "Đã thanh toán" : "Chưa thanh toán";
 
@@ -116,11 +116,10 @@ class _DonHangWidgetState extends State<DonHangWidget> {
                     .collection("Sản phẩm")
                     .where("Tên sản phẩm", isEqualTo: donHang.tenSanPham)
                     .where("Tên bàn", isEqualTo: donHang.tenBan)
-                    .limit(1)
                     .get();
 
-                if (query.docs.isNotEmpty) {
-                  await query.docs.first.reference.update({"trangthaithanhtoan": newStatus});
+                for (var doc in query.docs) {
+                  doc.reference.update({"trangthaithanhtoan": newStatus});
                 }
 
                 // 🔄 Update UI
@@ -128,11 +127,12 @@ class _DonHangWidgetState extends State<DonHangWidget> {
                   widget.list[index].trangThai = newStatus;
                 });
 
-                Navigator.pop(context);
-              },
-              child: const Text("Lưu"),
-            ),
-          ],
+                  Navigator.pop(context);
+                },
+                child: const Text("Lưu"),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -150,11 +150,10 @@ class _DonHangWidgetState extends State<DonHangWidget> {
         .collection("Sản phẩm")
         .where("Tên sản phẩm", isEqualTo: donHang.tenSanPham)
         .where("Tên bàn", isEqualTo: donHang.tenBan)
-        .limit(1)
         .get();
 
-    if (query.docs.isNotEmpty) {
-      await query.docs.first.reference.delete();
+    for (var doc in query.docs) {
+      await doc.reference.delete();
     }
 
     setState(() {

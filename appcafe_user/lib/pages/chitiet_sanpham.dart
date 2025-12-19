@@ -247,47 +247,40 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Thông tin đặt"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: editBan, decoration: const InputDecoration(labelText: "Tên bàn")),
-            TextField(controller: editSdt, decoration: const InputDecoration(labelText: "Số điện thoại")),
-            TextField(controller: editNv, decoration: const InputDecoration(labelText: "Tên nhân viên")),
-            const SizedBox(height: 10),
-            const Text("Hình thức:"),
-            StatefulBuilder(
-              builder: (context, setDialogState) {
-                return Column(
-                  children: [
-                    RadioListTile(
-                      title: const Text("Mang về"),
-                      value: "Mang về",
-                      groupValue: hinhThuc,
-                      onChanged: (v) => setDialogState(() => hinhThuc = v!),
-                    ),
-                    RadioListTile(
-                      title: const Text("Tại chỗ"),
-                      value: "Tại chỗ",
-                      groupValue: hinhThuc,
-                      onChanged: (v) => setDialogState(() => hinhThuc = v!),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
-
-        actions: [
-          TextButton(
-            child: const Text("Hủy"),
-            onPressed: () => Navigator.pop(context),
+      builder: (_) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: const Text("Thông tin đặt"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: editBan, decoration: const InputDecoration(labelText: "Tên bàn")),
+              TextField(controller: editSdt, decoration: const InputDecoration(labelText: "Số điện thoại")),
+              TextField(controller: editNv, decoration: const InputDecoration(labelText: "Tên nhân viên")),
+              const SizedBox(height: 10),
+              const Text("Hình thức:"),
+              RadioListTile(
+                title: const Text("Mang về"),
+                value: "Mang về",
+                groupValue: hinhThuc,
+                onChanged: (v) => setDialogState(() => hinhThuc = v!),
+              ),
+              RadioListTile(
+                title: const Text("Tại chỗ"),
+                value: "Tại chỗ",
+                groupValue: hinhThuc,
+                onChanged: (v) => setDialogState(() => hinhThuc = v!),
+              ),
+            ],
           ),
-          TextButton(
-            child: const Text("Thêm"),
-            onPressed: () async {
+
+          actions: [
+            TextButton(
+              child: const Text("Hủy"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: const Text("Thêm"),
+              onPressed: () async {
               if (editBan.text.isEmpty ||
                   editSdt.text.isEmpty ||
                   editNv.text.isEmpty) {
@@ -312,18 +305,19 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                 "Mức đá": selectedIce,
                 "Giá": giaSanPham,
                 "Tổng tiền": tongTien,
-                "hinhAnh": widget.hinhAnh,
+                "Hình ảnh": widget.hinhAnh,
                 "trangthaithanhtoan": "Chưa thanh toán",
               });
 
               Navigator.pop(context);
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Thêm vào giỏ thành công!")),
-              );
-            },
-          ),
-        ],
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Thêm vào giỏ thành công!")),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

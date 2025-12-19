@@ -32,7 +32,7 @@ class _TrangDangKyState extends State<TrangDangKy> {
         child: Column(
           children: [
             const SizedBox(height: 40),
-            Image.asset("assets/cfplus.png", width: 180, height: 180),
+            Image.asset("lib/assets/cfplus.png", width: 180, height: 180),
 
             Text(
               "ĐĂNG KÝ",

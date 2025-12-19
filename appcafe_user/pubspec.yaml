@@ -48,9 +48,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/
-    - assets/cfplus.png
-    - assets/cfplus2.png
+    - lib/assets/
 
   # fonts:
   #   - family: MyFont

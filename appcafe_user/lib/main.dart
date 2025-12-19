@@ -26,47 +26,47 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-    // 👉 GHÉP ROUTE VÀO ĐÂY
       routes: {
+        '/login': (context) => const TrangDangNhap(),
         '/trangchu': (context) => const TrangChu(),
-        '/home': (context) => const TrangChu(),
-        '/login': (context) => const trang_dangky(),
         '/dangky': (context) => const TrangDangKy(),
-        '/chitiet': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-          return ChiTietSanPham(
-            ten: args['Ten'] ?? args['ten'] ?? '',
-            gia: args['Gia'] ?? args['gia'] ?? '',
-            hinhAnh: args['hinhAnh'] ?? '',
-          );
-        },
-        '/chitiet_sanpham': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-          return ChiTietSanPham(
-            ten: args['ten'] ?? args['Ten'] ?? '',
-            gia: args['gia'] ?? args['Gia'] ?? '',
-            hinhAnh: args['hinh'] ?? args['hinhAnh'] ?? '',
-          );
-        },
-        '/suaThongTin': (context) => const SuaThongTinCaNhan(),
         '/account': (context) => const FragmentAccount(),
         '/setting': (context) => const FragmentSetting(),
+        '/suaThongTin': (context) => const SuaThongTinCaNhan(),
+        '/thongtin_cuahang': (context) => Scaffold(
+          appBar: AppBar(title: const Text('Thông tin cửa hàng')),
+          body: const Center(child: Text('Thông tin cửa hàng')),
+        ),
       },
-
-      title: 'CFPLUS Login',
+      onGenerateRoute: (settings) {
+        if (settings.name == '/chitiet' || settings.name == '/chitiet_sanpham') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          if (args != null) {
+            return MaterialPageRoute(
+              builder: (context) => ChiTietSanPham(
+                ten: args['ten'] ?? args['Ten'] ?? '',
+                gia: args['gia'] ?? args['Gia'] ?? '',
+                hinhAnh: args['hinhAnh'] ?? args['hinh'] ?? '',
+              ),
+            );
+          }
+        }
+        return null;
+      },
+      title: 'CFPLUS Cafe',
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.brown),
-      home: const trang_dangky(),
+      home: const TrangDangNhap(),
     );
   }
 }
 
-class trang_dangky extends StatefulWidget {
-  const trang_dangky({super.key});
+class TrangDangNhap extends StatefulWidget {
+  const TrangDangNhap({super.key});
   @override
-  State<trang_dangky> createState() => _trang_dangkyState();
+  State<TrangDangNhap> createState() => _TrangDangNhapState();
 }
 
-class _trang_dangkyState extends State<trang_dangky> {
+class _TrangDangNhapState extends State<TrangDangNhap> {
   final _emailCtrl = TextEditingController();
   final _pwCtrl = TextEditingController();
   bool _remember = false;
@@ -218,11 +218,11 @@ class _trang_dangkyState extends State<trang_dangky> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Logo - add asset 'assets/cfplus.png' to pubspec.yaml
+                // Logo
                 SizedBox(
                   width: 200,
                   height: 200,
-                  child: Image.asset('assets/cfplus.png', fit: BoxFit.contain),
+                  child: Image.asset('lib/assets/cfplus.png', fit: BoxFit.contain),
                 ),
                 const SizedBox(height: 8),
                 Text('ĐĂNG NHẬP', style: TextStyle(fontSize: 30, color: brown, fontWeight: FontWeight.bold)),

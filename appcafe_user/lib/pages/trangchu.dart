@@ -78,14 +78,14 @@ class _TrangChuState extends State<TrangChu> {
             width: double.infinity,
             height: 70,
             color: const Color(0xFFF5E6CC),
-            child: Image.asset("assets/cfplus2.png", fit: BoxFit.contain),
+            child: Image.asset("lib/assets/cfplus.png", fit: BoxFit.contain),
           ),
 
           Row(
             children: [
               Padding(
                 padding: const EdgeInsets.all(8),
-                child: Image.asset("assets/cfplus.png", width: 50, height: 50),
+                child: Image.asset("lib/assets/cfplus.png", width: 50, height: 50),
               ),
 
               Expanded(
