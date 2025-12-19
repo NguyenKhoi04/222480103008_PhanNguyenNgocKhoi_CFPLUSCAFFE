@@ -29,9 +29,9 @@ class DonHang {
       mucDa: json['Mức đá'],
       soLuong: json['Số lượng'],
       tongTien: json['Tổng tiền'],
-      hinhThuc: json['Hình thức'],
-      trangThai: json['trangthaithanhtoan'],
-      hinhAnh: json['Hình ảnh'],
+      hinhThuc: json['Hình thức'] ?? json['hình thức'] ?? '',
+      trangThai: json['trangthaithanhtoan'] ?? '',
+      hinhAnh: json['hinhAnh'] ?? json['Hình ảnh'] ?? '',
     );
   }
 }

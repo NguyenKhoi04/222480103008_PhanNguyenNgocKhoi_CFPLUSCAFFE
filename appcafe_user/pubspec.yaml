@@ -47,10 +47,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Nếu có asset hãy bỏ comment bên dưới:
-  # assets:
-  #   - assets/images/
-  #   - assets/icons/
+  assets:
+    - assets/
+    - assets/cfplus.png
+    - assets/cfplus2.png
 
   # fonts:
   #   - family: MyFont

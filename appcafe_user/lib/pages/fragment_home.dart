@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:appcafe_user/pages/tabOne_Tatca.dart';
+import 'package:appcafe_user/pages/tabTwo_BestSeller.dart';
+import 'package:appcafe_user/pages/tabThree_Monngon.dart';
 
 class FragmentHome extends StatefulWidget {
    final VoidCallback onThemHang;
@@ -132,9 +135,9 @@ class _FragmentHomeState extends State<FragmentHome>
               : TabBarView(
                   controller: tabController,
                   children: const [
-                    Center(child: Text("Tất cả sản phẩm")),
-                    Center(child: Text("Best Seller")),
-                    Center(child: Text("Món ngon phải thử")),
+                    TabOneTatCa(),
+                    TabTwoBestSeller(),
+                    TabThreeMonngon(),
                   ],
                 ),
         ),
@@ -155,9 +158,9 @@ class _FragmentHomeState extends State<FragmentHome>
           onTap: () {
             Navigator.pushNamed(context, "/chitiet",
                 arguments: {
-                  "Ten": sp["Ten"],
-                  "Gia": sp["Gia"],
-                  "hinhAnh": sp["hinhAnh"]
+                  "Ten": sp["Ten"] ?? "",
+                  "Gia": sp["Gia"] ?? "",
+                  "hinhAnh": sp["hinhAnh"] ?? ""
                 });
           },
           child: Card(

@@ -37,8 +37,6 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
 
   @override
   Widget build(BuildContext context) {
-    final args =
-    ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     return Scaffold(
       
       backgroundColor: const Color(0xFFFAFAFA),
@@ -112,7 +110,7 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text("Số lượng", style: TextStyle(color: Colors.grey)),
-                    Text("Tổng tiền: $tongTienđ",
+                    Text("Tổng tiền: $tongTien đ",
                         style: const TextStyle(
                             fontSize: 20,
                             color: Colors.blue,
@@ -259,17 +257,25 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
             TextField(controller: editNv, decoration: const InputDecoration(labelText: "Tên nhân viên")),
             const SizedBox(height: 10),
             const Text("Hình thức:"),
-            RadioListTile(
-              title: const Text("Mang về"),
-              value: "Mang về",
-              groupValue: hinhThuc,
-              onChanged: (v) => setState(() => hinhThuc = v!),
-            ),
-            RadioListTile(
-              title: const Text("Tại chỗ"),
-              value: "Tại chỗ",
-              groupValue: hinhThuc,
-              onChanged: (v) => setState(() => hinhThuc = v!),
+            StatefulBuilder(
+              builder: (context, setDialogState) {
+                return Column(
+                  children: [
+                    RadioListTile(
+                      title: const Text("Mang về"),
+                      value: "Mang về",
+                      groupValue: hinhThuc,
+                      onChanged: (v) => setDialogState(() => hinhThuc = v!),
+                    ),
+                    RadioListTile(
+                      title: const Text("Tại chỗ"),
+                      value: "Tại chỗ",
+                      groupValue: hinhThuc,
+                      onChanged: (v) => setDialogState(() => hinhThuc = v!),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
@@ -299,7 +305,7 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                 "Tên bàn": editBan.text,
                 "Số điện thoại": editSdt.text,
                 "Tên nhân viên": editNv.text,
-                "hình thức": hinhThuc,
+                "Hình thức": hinhThuc,
                 "Tên sản phẩm": widget.ten,
                 "Số lượng": soLuong,
                 "Size": selectedSize,

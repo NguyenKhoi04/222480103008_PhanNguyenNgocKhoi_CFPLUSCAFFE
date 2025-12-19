@@ -285,7 +285,7 @@ class _TrangDangKyState extends State<TrangDangKy> {
         const SnackBar(content: Text("Đăng ký thành công!")),
       );
 
-      Navigator.pushReplacementNamed(context, "/home");
+      Navigator.pushReplacementNamed(context, "/trangchu");
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi đăng ký: $e")),

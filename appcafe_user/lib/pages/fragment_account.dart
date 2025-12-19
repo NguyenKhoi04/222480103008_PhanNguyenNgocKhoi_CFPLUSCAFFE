@@ -1,7 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
-class FragmentAccount extends StatelessWidget {
+class FragmentAccount extends StatefulWidget {
   const FragmentAccount({super.key});
+
+  @override
+  State<FragmentAccount> createState() => _FragmentAccountState();
+}
+
+class _FragmentAccountState extends State<FragmentAccount> {
+  String hoTen = '';
+  String ngaySinh = '';
+  String gioiTinh = '';
+  String email = '';
+  String soDienThoai = '';
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  void loadData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection("Người dùng")
+          .doc("Nhân viên")
+          .get();
+
+      if (doc.exists) {
+        setState(() {
+          hoTen = doc.get("Họ tên NV") ?? '';
+          gioiTinh = doc.get("Giới tính") ?? '';
+          email = doc.get("Email") ?? user.email ?? '';
+          soDienThoai = doc.get("Số điện thoại") ?? '';
+          
+          var ngaySinhData = doc.get("Ngày sinh");
+          if (ngaySinhData != null) {
+            if (ngaySinhData is Timestamp) {
+              ngaySinh = DateFormat("dd/MM/yyyy").format(ngaySinhData.toDate());
+            } else {
+              ngaySinh = ngaySinhData.toString();
+            }
+          }
+        });
+      } else {
+        setState(() {
+          email = user.email ?? '';
+        });
+      }
+    } catch (e) {
+      print('Lỗi load dữ liệu: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +88,20 @@ class FragmentAccount extends StatelessWidget {
               "Họ Tên:",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
+            Text(
+              hoTen.isEmpty ? "Chưa có thông tin" : hoTen,
+              style: const TextStyle(fontSize: 18),
+            ),
 
             // --- Ngày sinh ---
             const SizedBox(height: 10),
             const Text(
               "Ngày sinh:",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              ngaySinh.isEmpty ? "Chưa có thông tin" : ngaySinh,
+              style: const TextStyle(fontSize: 18),
             ),
 
             // --- Giới tính ---
@@ -46,6 +110,10 @@ class FragmentAccount extends StatelessWidget {
               "Giới tính:",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
+            Text(
+              gioiTinh.isEmpty ? "Chưa có thông tin" : gioiTinh,
+              style: const TextStyle(fontSize: 18),
+            ),
 
             // --- Email ---
             const SizedBox(height: 10),
@@ -53,12 +121,20 @@ class FragmentAccount extends StatelessWidget {
               "Email:",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
+            Text(
+              email.isEmpty ? "Chưa có thông tin" : email,
+              style: const TextStyle(fontSize: 18),
+            ),
 
             // --- Số điện thoại ---
             const SizedBox(height: 10),
             const Text(
               "Số điện thoại:",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              soDienThoai.isEmpty ? "Chưa có thông tin" : soDienThoai,
+              style: const TextStyle(fontSize: 18),
             ),
 
             const SizedBox(height: 30),

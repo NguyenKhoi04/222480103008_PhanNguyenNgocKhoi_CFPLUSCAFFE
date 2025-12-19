@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'donhang.dart';
+import 'DonHang.dart';
 
 class DonHangWidget extends StatefulWidget {
   final List<DonHang> list;
@@ -116,10 +116,11 @@ class _DonHangWidgetState extends State<DonHangWidget> {
                     .collection("Sản phẩm")
                     .where("Tên sản phẩm", isEqualTo: donHang.tenSanPham)
                     .where("Tên bàn", isEqualTo: donHang.tenBan)
+                    .limit(1)
                     .get();
 
-                for (var doc in query.docs) {
-                  doc.reference.update({"trangthaithanhtoan": newStatus});
+                if (query.docs.isNotEmpty) {
+                  await query.docs.first.reference.update({"trangthaithanhtoan": newStatus});
                 }
 
                 // 🔄 Update UI
@@ -149,10 +150,11 @@ class _DonHangWidgetState extends State<DonHangWidget> {
         .collection("Sản phẩm")
         .where("Tên sản phẩm", isEqualTo: donHang.tenSanPham)
         .where("Tên bàn", isEqualTo: donHang.tenBan)
+        .limit(1)
         .get();
 
-    for (var doc in query.docs) {
-      await doc.reference.delete();
+    if (query.docs.isNotEmpty) {
+      await query.docs.first.reference.delete();
     }
 
     setState(() {

@@ -9,6 +9,10 @@ import 'package:appcafe_user/pages/fragment_account.dart';
 import 'package:appcafe_user/pages/fragment_history.dart';
 import 'package:appcafe_user/pages/fragment_home.dart';
 import 'package:appcafe_user/pages/fragment_setting.dart';
+import 'package:appcafe_user/pages/trangchu.dart';
+import 'package:appcafe_user/pages/trang_dangky.dart';
+import 'package:appcafe_user/pages/chitiet_sanpham.dart';
+import 'package:appcafe_user/pages/sua_thongtincanhan.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +28,29 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
     // 👉 GHÉP ROUTE VÀO ĐÂY
       routes: {
-        '/trangchu': (context) => FragmentHome(onThemHang: () {}), 
-        // Cần truyền hàm rỗng tạm thời vì có callback constructor/const (required) nên không cần costructor rỗng
-        "/history": (context) => FragmentHistory(onThemHang: () {}),
-        "/account": (context) => FragmentAccount(),
-        "/setting": (context) => FragmentSetting(),
-        '/suaThongTin': (context) => RegisterPage(),
+        '/trangchu': (context) => const TrangChu(),
+        '/home': (context) => const TrangChu(),
+        '/login': (context) => const trang_dangky(),
+        '/dangky': (context) => const TrangDangKy(),
+        '/chitiet': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return ChiTietSanPham(
+            ten: args['Ten'] ?? args['ten'] ?? '',
+            gia: args['Gia'] ?? args['gia'] ?? '',
+            hinhAnh: args['hinhAnh'] ?? '',
+          );
+        },
+        '/chitiet_sanpham': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return ChiTietSanPham(
+            ten: args['ten'] ?? args['Ten'] ?? '',
+            gia: args['gia'] ?? args['Gia'] ?? '',
+            hinhAnh: args['hinh'] ?? args['hinhAnh'] ?? '',
+          );
+        },
+        '/suaThongTin': (context) => const SuaThongTinCaNhan(),
+        '/account': (context) => const FragmentAccount(),
+        '/setting': (context) => const FragmentSetting(),
       },
 
       title: 'CFPLUS Login',
@@ -116,7 +137,7 @@ class _trang_dangkyState extends State<trang_dangky> {
         _prefs?.setBool('remember', false);
       }
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+      Navigator.of(context).pushReplacementNamed('/trangchu');
     } on FirebaseAuthException {
       _failedAttempts++;
       _prefs?.setInt('failedAttempts', _failedAttempts);
@@ -262,7 +283,10 @@ class _trang_dangkyState extends State<trang_dangky> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text('Chưa có tài khoản?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    TextButton(onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RegisterPage())), child: const Text('Đăng ký', style: TextStyle(fontSize: 18, color: Colors.brown))),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pushNamed('/dangky'),
+                      child: const Text('Đăng ký', style: TextStyle(fontSize: 18, color: Colors.brown)),
+                    ),
                   ],
                 ),
               ],
@@ -274,18 +298,3 @@ class _trang_dangkyState extends State<trang_dangky> {
   }
 }
 
-class RegisterPage extends StatelessWidget {
-  const RegisterPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: const Text('Đăng ký')), body: const Center(child: Text('Trang đăng ký (chưa triển khai)')));
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: const Text('Trang chủ')), body: const Center(child: Text('Chào mừng!')));
-  }
-}
