@@ -1,6 +1,6 @@
 class SanPham {
   final String ten;
-  final String gia;
+  final double gia;
   final String hinh;
 
   SanPham({

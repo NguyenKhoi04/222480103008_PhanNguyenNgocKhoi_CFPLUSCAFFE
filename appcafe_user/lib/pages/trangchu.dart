@@ -33,26 +33,37 @@ class _TrangChuState extends State<TrangChu> {
   // ================================
   Future<void> _loadUserName() async {
     User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      setState(() => tenNhanVien = "Xin chào!");
+      return;
+    }
 
-    FirebaseFirestore.instance
-        .collection("Người dùng")
-        .doc("Nhân viên")
-        .get()
-        .then((DocumentSnapshot doc) {
-      if (doc.exists) {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection("Người dùng")
+          .doc("Nhân viên")
+          .get()
+          .timeout(const Duration(seconds: 5));
+
+      if (doc.exists && mounted) {
         String? email = doc.get("Email");
         String? hoTen = doc.get("Họ tên NV");
 
-        if (email == user.email) {
+        if (email == user.email && hoTen != null && hoTen.isNotEmpty) {
           setState(() {
             tenNhanVien = "Xin chào, $hoTen";
           });
+        } else {
+          setState(() => tenNhanVien = "Xin chào!");
         }
+      } else if (mounted) {
+        setState(() => tenNhanVien = "Xin chào!");
       }
-    }).catchError((e) {
-      setState(() => tenNhanVien = "Lỗi tải dữ liệu");
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() => tenNhanVien = "Xin chào!");
+      }
+    }
   }
 
   // =================================================
@@ -78,14 +89,21 @@ class _TrangChuState extends State<TrangChu> {
             width: double.infinity,
             height: 70,
             color: const Color(0xFFF5E6CC),
-            child: Image.asset("lib/assets/cfplus.png", fit: BoxFit.contain),
+            child: Image.asset("lib/assets/cfplus.png", 
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => const SizedBox(),
+            ),
           ),
 
           Row(
             children: [
               Padding(
                 padding: const EdgeInsets.all(8),
-                child: Image.asset("lib/assets/cfplus.png", width: 50, height: 50),
+                child: Image.asset("lib/assets/cfplus.png", 
+                  width: 50, 
+                  height: 50,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 50),
+                ),
               ),
 
               Expanded(

@@ -12,6 +12,7 @@ class FragmentHistory extends StatefulWidget {
 
 class _FragmentHistoryState extends State<FragmentHistory> {
   List<Map<String, dynamic>> listDonHang = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -21,29 +22,38 @@ class _FragmentHistoryState extends State<FragmentHistory> {
 
   // ====== Lấy dữ liệu Firestore giống Java ======
   void loadDonHang() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection("Đơn hàng")
-        .doc("Giỏ hàng")
-        .collection("Sản phẩm")
-        .get();
+    setState(() => isLoading = true);
+    
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection("Đơn hàng")
+          .doc("Giỏ hàng")
+          .collection("Sản phẩm")
+          .get()
+          .timeout(const Duration(seconds: 10));
 
-    listDonHang.clear();
+      listDonHang.clear();
 
-    for (var doc in snapshot.docs) {
-      listDonHang.add({
-        "tenBan": doc["Tên bàn"],
-        "tenSanPham": doc["Tên sản phẩm"],
-        "size": doc.data().containsKey("Size") ? doc["Size"] : "Không xác định",
-        "da": doc["Mức đá"],
-        "soLuong": doc["Số lượng"],
-        "tongTien": doc["Tổng tiền"],
-        "hinhThuc": doc["Hình thức"] ?? doc["hình thức"] ?? "",
-        "trangThai": doc["trangthaithanhtoan"],
-        "hinhAnh": doc["Hình ảnh"] ?? doc["hinhAnh"] ?? "",
-      });
+      for (var doc in snapshot.docs) {
+        listDonHang.add({
+          "tenBan": doc["Tên bàn"] ?? "",
+          "tenSanPham": doc["Tên sản phẩm"] ?? "",
+          "size": doc.data().containsKey("Size") ? doc["Size"] : "Không xác định",
+          "da": doc["Mức đá"] ?? "",
+          "soLuong": doc["Số lượng"] ?? 0,
+          "tongTien": doc["Tổng tiền"] ?? 0,
+          "hinhThuc": doc["Hình thức"] ?? doc["hình thức"] ?? "",
+          "trangThai": doc["trangthaithanhtoan"] ?? "",
+          "hinhAnh": doc["Hình ảnh"] ?? doc["hinhAnh"] ?? "",
+        });
+      }
+    } catch (e) {
+      print("Lỗi load đơn hàng: $e");
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
-
-    setState(() {});
   }
 
   @override
@@ -85,33 +95,40 @@ class _FragmentHistoryState extends State<FragmentHistory> {
 
         // ===== LIST VIEW =====
         Expanded(
-          child: ListView.builder(
-            itemCount: listDonHang.length,
-            itemBuilder: (context, index) {
-              final item = listDonHang[index];
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : listDonHang.isEmpty
+                  ? const Center(child: Text("Chưa có đơn hàng nào"))
+                  : ListView.builder(
+                      itemCount: listDonHang.length,
+                      itemBuilder: (context, index) {
+                        final item = listDonHang[index];
 
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                elevation: 2,
-                child: ListTile(
-                  leading: Image.network(
-                    item["hinhAnh"],
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                  ),
-                  title: Text(item["tenSanPham"]),
-                  subtitle: Text(
-                      "Bàn: ${item["tenBan"]}\n"
-                      "Size: ${item["size"]} | Đá: ${item["da"]}\n"
-                      "Số lượng: ${item["soLuong"]} | Tổng: ${item["tongTien"]} đ\n"
-                      "Hình thức: ${item["hinhThuc"]}\n"
-                      "Trạng thái: ${item["trangThai"]}"
-                  ),
-                ),
-              );
-            },
-          ),
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          elevation: 2,
+                          child: ListTile(
+                            leading: item["hinhAnh"] != null && item["hinhAnh"].toString().isNotEmpty
+                                ? Image.network(
+                                    item["hinhAnh"],
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.image),
+                                  )
+                                : const Icon(Icons.image),
+                            title: Text(item["tenSanPham"] ?? ""),
+                            subtitle: Text(
+                                "Bàn: ${item["tenBan"]}\n"
+                                "Size: ${item["size"]} | Đá: ${item["da"]}\n"
+                                "Số lượng: ${item["soLuong"]} | Tổng: ${item["tongTien"]} đ\n"
+                                "Hình thức: ${item["hinhThuc"]}\n"
+                                "Trạng thái: ${item["trangThai"]}"
+                            ),
+                          ),
+                        );
+                      },
+                    ),
         ),
       ],
     );

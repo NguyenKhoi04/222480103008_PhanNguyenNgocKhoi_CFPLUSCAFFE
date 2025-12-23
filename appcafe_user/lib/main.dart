@@ -55,8 +55,47 @@ class MyApp extends StatelessWidget {
       },
       title: 'CFPLUS Cafe',
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.brown),
-      home: const TrangDangNhap(),
+      home: const AuthWrapper(),
     );
+  }
+}
+
+// Widget kiểm tra trạng thái đăng nhập
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _isLoading = true;
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthStatus();
+  }
+
+  Future<void> _checkAuthStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    setState(() {
+      _isLoggedIn = user != null;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    return _isLoggedIn ? const TrangChu() : const TrangDangNhap();
   }
 }
 
@@ -222,7 +261,10 @@ class _TrangDangNhapState extends State<TrangDangNhap> {
                 SizedBox(
                   width: 200,
                   height: 200,
-                  child: Image.asset('lib/assets/cfplus.png', fit: BoxFit.contain),
+                  child: Image.asset('lib/assets/cfplus.png', 
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 200),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text('ĐĂNG NHẬP', style: TextStyle(fontSize: 30, color: brown, fontWeight: FontWeight.bold)),

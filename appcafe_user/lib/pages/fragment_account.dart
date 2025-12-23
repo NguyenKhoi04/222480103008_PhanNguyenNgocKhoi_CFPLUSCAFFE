@@ -16,6 +16,7 @@ class _FragmentAccountState extends State<FragmentAccount> {
   String gioiTinh = "";
   String email = "";
   String soDienThoai = "";
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -25,15 +26,24 @@ class _FragmentAccountState extends State<FragmentAccount> {
 
   void loadData() async {
     User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      setState(() {
+        isLoading = false;
+        email = "";
+      });
+      return;
+    }
+
+    setState(() => isLoading = true);
 
     try {
       final doc = await FirebaseFirestore.instance
           .collection("Người dùng")
           .doc("Nhân viên")
-          .get();
+          .get()
+          .timeout(const Duration(seconds: 5));
 
-      if (doc.exists) {
+      if (doc.exists && mounted) {
         setState(() {
           hoTen = doc.get("Họ tên NV") ?? "";
           gioiTinh = doc.get("Giới tính") ?? "";
@@ -48,19 +58,33 @@ class _FragmentAccountState extends State<FragmentAccount> {
               ngaySinh = ngaySinhData.toString();
             }
           }
+          isLoading = false;
         });
-      } else {
+      } else if (mounted) {
         setState(() {
           email = user.email ?? "";
+          isLoading = false;
         });
       }
     } catch (e) {
       print("Lỗi load data: $e");
+      if (mounted) {
+        setState(() {
+          email = user.email ?? "";
+          isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -120,6 +144,7 @@ class _FragmentAccountState extends State<FragmentAccount> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
               ),

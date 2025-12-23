@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class ChiTietSanPham extends StatefulWidget {
   final String ten;
-  final String gia;
+  final double gia;
   final String hinhAnh;
 
   const ChiTietSanPham({
@@ -19,38 +19,38 @@ class ChiTietSanPham extends StatefulWidget {
 
 class _ChiTietSanPhamState extends State<ChiTietSanPham> {
   int soLuong = 1;
-  int giaSanPham = 0;
+  late int giaSanPham;
 
-  // Size
   String? selectedSize;
-
-  // Đá
   String? selectedIce;
 
   @override
   void initState() {
     super.initState();
-    giaSanPham = int.tryParse(widget.gia.replaceAll(RegExp(r'[^0-9]'), "")) ?? 0;
+    giaSanPham = widget.gia.toInt();
   }
 
   int get tongTien => soLuong * giaSanPham;
 
+  String formatTien(int tien) {
+    return tien.toString().replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (match) => '.',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
         title: const Text("Chi tiết sản phẩm"),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.brown,
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-
-            // Ảnh sản phẩm
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
@@ -63,58 +63,60 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
 
             const SizedBox(height: 15),
 
-            // Tên
             Text(
               widget.ten,
               style: const TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue),
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown),
               textAlign: TextAlign.center,
             ),
 
             const SizedBox(height: 20),
 
-            // Chọn size
             _buildBlock(
               title: "Chọn Size",
-              child: Row(
+              child: Column(
                 children: [
-                  _sizeButton("S"),
-                  _sizeButton("M"),
-                  _sizeButton("L"),
+                  _radioSize("S"),
+                  _radioSize("M"),
+                  _radioSize("L"),
                 ],
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // Chọn đá
             _buildBlock(
               title: "Chọn mức đá",
               child: Column(
                 children: [
-                  _iceButton("Đá bình thường"),
-                  _iceButton("Ít đá"),
-                  _iceButton("Đá riêng"),
-                  _iceButton("Không đá"),
+                  _radioIce("Đá bình thường"),
+                  _radioIce("Ít đá"),
+                  _radioIce("Đá riêng"),
+                  _radioIce("Không đá"),
                 ],
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // Số lượng
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Số lượng", style: TextStyle(color: Colors.grey)),
-                    Text("Tổng tiền: $tongTien đ",
-                        style: const TextStyle(
-                            fontSize: 20,
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold)),
+                    const Text("Số lượng",
+                        style: TextStyle(color: Colors.grey)),
+                    Text(
+                      "Tổng tiền: ${formatTien(tongTien)} đ",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.brown,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 Row(
@@ -127,9 +129,11 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                         }
                       },
                     ),
-                    Text("$soLuong",
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(
+                      "$soLuong",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                     IconButton(
                       icon: const Icon(Icons.add),
                       onPressed: () {
@@ -143,13 +147,13 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
 
             const SizedBox(height: 20),
 
-            // Thêm vào giỏ
             _button(
               text: "Thêm vào giỏ hàng",
               onTap: () {
                 if (selectedSize == null || selectedIce == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Vui lòng chọn size và mức đá")),
+                    const SnackBar(
+                        content: Text("Vui lòng chọn size và mức đá")),
                   );
                   return;
                 }
@@ -169,20 +173,23 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
     );
   }
 
-  // Widget Khối hình chữ nhật
+  // ================= WIDGET =================
+
   Widget _buildBlock({required String title, required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade200),
+        border: Border.all(color: Colors.brown.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
               style: const TextStyle(
-                  fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold)),
+                  fontSize: 18,
+                  color: Colors.brown,
+                  fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           child,
         ],
@@ -190,33 +197,21 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
     );
   }
 
-  // Button chọn size
-  Widget _sizeButton(String s) {
-    return Row(
-      children: [
-        Checkbox(
-          value: selectedSize == s,
-          onChanged: (_) {
-            setState(() => selectedSize = s);
-          },
-        ),
-        Text(s, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-      ],
+  Widget _radioSize(String s) {
+    return RadioListTile<String>(
+      title: Text(s),
+      value: s,
+      groupValue: selectedSize,
+      onChanged: (v) => setState(() => selectedSize = v),
     );
   }
 
-  // Button chọn đá
-  Widget _iceButton(String text) {
-    return Row(
-      children: [
-        Checkbox(
-          value: selectedIce == text,
-          onChanged: (_) {
-            setState(() => selectedIce = text);
-          },
-        ),
-        Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-      ],
+  Widget _radioIce(String s) {
+    return RadioListTile<String>(
+      title: Text(s),
+      value: s,
+      groupValue: selectedIce,
+      onChanged: (v) => setState(() => selectedIce = v),
     );
   }
 
@@ -227,17 +222,17 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-            color: Colors.blue, borderRadius: BorderRadius.circular(10)),
-        child: Text(text,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 18)),
+            color: Colors.brown, borderRadius: BorderRadius.circular(10)),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white, fontSize: 18),
+        ),
       ),
     );
   }
 
-  // ==============================
-  //      DIALOG + FIRESTORE
-  // ==============================
+  // ================= DIALOG + FIRESTORE =================
 
   void _showThongTinDialog() {
     final editBan = TextEditingController();
@@ -247,40 +242,47 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
 
     showDialog(
       context: context,
-      builder: (_) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) => AlertDialog(
-          title: const Text("Thông tin đặt"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
+      builder: (_) => AlertDialog(
+        title: const Text("Thông tin đặt"),
+        content: SingleChildScrollView(
+          child: Column(
             children: [
-              TextField(controller: editBan, decoration: const InputDecoration(labelText: "Tên bàn")),
-              TextField(controller: editSdt, decoration: const InputDecoration(labelText: "Số điện thoại")),
-              TextField(controller: editNv, decoration: const InputDecoration(labelText: "Tên nhân viên")),
+              TextField(
+                  controller: editBan,
+                  decoration:
+                      const InputDecoration(labelText: "Tên bàn")),
+              TextField(
+                  controller: editSdt,
+                  decoration:
+                      const InputDecoration(labelText: "Số điện thoại")),
+              TextField(
+                  controller: editNv,
+                  decoration:
+                      const InputDecoration(labelText: "Tên nhân viên")),
               const SizedBox(height: 10),
-              const Text("Hình thức:"),
               RadioListTile(
                 title: const Text("Mang về"),
                 value: "Mang về",
                 groupValue: hinhThuc,
-                onChanged: (v) => setDialogState(() => hinhThuc = v!),
+                onChanged: (v) => hinhThuc = v!,
               ),
               RadioListTile(
                 title: const Text("Tại chỗ"),
                 value: "Tại chỗ",
                 groupValue: hinhThuc,
-                onChanged: (v) => setDialogState(() => hinhThuc = v!),
+                onChanged: (v) => hinhThuc = v!,
               ),
             ],
           ),
-
-          actions: [
-            TextButton(
-              child: const Text("Hủy"),
-              onPressed: () => Navigator.pop(context),
-            ),
-            TextButton(
-              child: const Text("Thêm"),
-              onPressed: () async {
+        ),
+        actions: [
+          TextButton(
+            child: const Text("Hủy"),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton(
+            child: const Text("Thêm"),
+            onPressed: () async {
               if (editBan.text.isEmpty ||
                   editSdt.text.isEmpty ||
                   editNv.text.isEmpty) {
@@ -291,33 +293,33 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
               }
 
               await FirebaseFirestore.instance
-                  .collection("Đơn hàng")
-                  .doc("Giỏ hàng")
-                  .collection("Sản phẩm")
+                  .collection("DonHang")
+                  .doc("GioHang")
+                  .collection("SanPham")
                   .add({
-                "Tên bàn": editBan.text,
-                "Số điện thoại": editSdt.text,
-                "Tên nhân viên": editNv.text,
-                "Hình thức": hinhThuc,
-                "Tên sản phẩm": widget.ten,
-                "Số lượng": soLuong,
-                "Size": selectedSize,
-                "Mức đá": selectedIce,
-                "Giá": giaSanPham,
-                "Tổng tiền": tongTien,
-                "Hình ảnh": widget.hinhAnh,
-                "trangthaithanhtoan": "Chưa thanh toán",
+                "tenBan": editBan.text,
+                "soDienThoai": editSdt.text,
+                "tenNhanVien": editNv.text,
+                "hinhThuc": hinhThuc,
+                "tenSanPham": widget.ten,
+                "soLuong": soLuong,
+                "size": selectedSize,
+                "mucDa": selectedIce,
+                "gia": giaSanPham,
+                "tongTien": tongTien,
+                "hinhAnh": widget.hinhAnh,
+                "trangThaiThanhToan": "Chưa thanh toán",
+                "thoiGian": Timestamp.now(),
               });
 
               Navigator.pop(context);
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Thêm vào giỏ thành công!")),
-                );
-              },
-            ),
-          ],
-        ),
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Thêm vào giỏ thành công!")),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

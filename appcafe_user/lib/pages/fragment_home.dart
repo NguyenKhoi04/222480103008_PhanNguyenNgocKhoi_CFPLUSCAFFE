@@ -5,7 +5,7 @@ import 'package:appcafe_user/pages/tabTwo_BestSeller.dart';
 import 'package:appcafe_user/pages/tabThree_Monngon.dart';
 
 class FragmentHome extends StatefulWidget {
-   final VoidCallback onThemHang;
+  final VoidCallback onThemHang;
   const FragmentHome({super.key, required this.onThemHang});
 
   @override
@@ -15,7 +15,7 @@ class FragmentHome extends StatefulWidget {
 class _FragmentHomeState extends State<FragmentHome>
     with SingleTickerProviderStateMixin {
   late TabController tabController;
-  TextEditingController searchController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
 
   List<Map<String, dynamic>> searchList = [];
 
@@ -25,30 +25,26 @@ class _FragmentHomeState extends State<FragmentHome>
     tabController = TabController(length: 3, vsync: this);
 
     searchController.addListener(() {
-      if (searchController.text.trim().isEmpty) {
-        setState(() {
-          searchList.clear();
-        });
+      final keyword = searchController.text.trim();
+      if (keyword.isEmpty) {
+        setState(() => searchList.clear());
       } else {
-        doSearch(searchController.text.trim());
+        doSearch(keyword);
       }
     });
   }
 
-  /// --------------------------
-  /// KIỂM TRA TỪ KHÓA (Regex)
-  /// --------------------------
+  // ----------------- KIỂM TRA TỪ KHÓA -----------------
   bool isValidKeyword(String keyword) {
     final regex = RegExp(r'^[\p{L}\p{N} ]{1,50}$', unicode: true);
     return regex.hasMatch(keyword);
   }
 
-  /// --------------------------
-  /// HÀM BỎ DẤU TIẾNG VIỆT
-  /// --------------------------
+  // ----------------- BỎ DẤU TIẾNG VIỆT -----------------
   String removeAccent(String str) {
     const withDia =
-        "àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡ"
+        "àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩ"
+        "òóọỏõôồốộổỗơờớợởỡ"
         "ùúụủũưừứựửữỳýỵỷỹđ";
     const withoutDia =
         "aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyyd";
@@ -60,10 +56,8 @@ class _FragmentHomeState extends State<FragmentHome>
     return str;
   }
 
-  /// --------------------------
-  /// HÀM TÌM KIẾM FIRESTORE
-  /// --------------------------
-  void doSearch(String keyword) async {
+  // ----------------- TÌM KIẾM FIRESTORE -----------------
+  Future<void> doSearch(String keyword) async {
     if (!isValidKeyword(keyword)) {
       setState(() => searchList.clear());
       ScaffoldMessenger.of(context).showSnackBar(
@@ -72,14 +66,16 @@ class _FragmentHomeState extends State<FragmentHome>
       return;
     }
 
-    final snapshots = await FirebaseFirestore.instance
-        .collection("Tìm kiếm")
-        .get();
+    final snapshot =
+        await FirebaseFirestore.instance.collection("Tìm kiếm").get();
 
-    final results = snapshots.docs.where((doc) {
-      final ten = doc["Ten"] ?? "";
-      return removeAccent(ten)
-          .contains(removeAccent(keyword));
+    final results = snapshot.docs.where((doc) {
+      final data = doc.data();
+
+      if (!data.containsKey("Ten")) return false;
+
+      final ten = data["Ten"].toString();
+      return removeAccent(ten).contains(removeAccent(keyword));
     }).map((doc) => doc.data()).toList();
 
     setState(() {
@@ -89,8 +85,8 @@ class _FragmentHomeState extends State<FragmentHome>
 
   @override
   Widget build(BuildContext context) {
-    final bool isSearching = searchList.isNotEmpty ||
-        searchController.text.trim().isNotEmpty;
+    final bool isSearching =
+        searchController.text.trim().isNotEmpty && searchList.isNotEmpty;
 
     return Column(
       children: [
@@ -99,25 +95,29 @@ class _FragmentHomeState extends State<FragmentHome>
           margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)]),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: const [
+              BoxShadow(color: Colors.black26, blurRadius: 4)
+            ],
+          ),
           child: TextField(
             controller: searchController,
             decoration: const InputDecoration(
-                hintText: "Tìm kiếm sản phẩm...",
-                border: InputBorder.none,
-                icon: Icon(Icons.search)),
+              hintText: "Tìm kiếm sản phẩm...",
+              border: InputBorder.none,
+              icon: Icon(Icons.search),
+            ),
           ),
         ),
 
-        // ---------------- BUTTON THÊM HÀNG ----------------
+        // ---------------- BUTTON ----------------
         ElevatedButton(
           onPressed: widget.onThemHang,
           child: const Text("Thêm vào giỏ hàng"),
         ),
 
-        // ---------------- TAB + PAGEVIEW ----------------
+        // ---------------- TAB ----------------
         if (!isSearching)
           TabBar(
             controller: tabController,
@@ -145,35 +145,47 @@ class _FragmentHomeState extends State<FragmentHome>
     );
   }
 
-  /// --------------------------------------
-  /// LISTVIEW HIỂN THỊ KẾT QUẢ TÌM KIẾM
-  /// --------------------------------------
+  // ----------------- LIST KẾT QUẢ TÌM KIẾM -----------------
   Widget buildSearchList() {
     return ListView.builder(
       padding: const EdgeInsets.all(10),
       itemCount: searchList.length,
       itemBuilder: (context, index) {
         final sp = searchList[index];
+
+        final String ten = sp.containsKey("Ten") ? sp["Ten"].toString() : "";
+        final String hinh = sp["hinhAnh"] ?? "";
+
+        final rawGia = sp["Gia"];
+        final double gia = rawGia is num
+            ? rawGia.toDouble()
+            : double.tryParse(
+                    rawGia.toString().replaceAll(RegExp(r'[^0-9]'), '')) ??
+                0;
+
         return InkWell(
           onTap: () {
-            Navigator.pushNamed(context, "/chitiet",
-                arguments: {
-                  "Ten": sp["Ten"],
-                  "Gia": sp["Gia"],
-                  "hinhAnh": sp["hinhAnh"]
-                });
+            Navigator.pushNamed(
+              context,
+              "/chitiet_sanpham",
+              arguments: {
+                "ten": ten,
+                "gia": gia,
+                "hinhAnh": hinh,
+              },
+            );
           },
           child: Card(
             margin: const EdgeInsets.only(bottom: 12),
             child: ListTile(
               leading: Image.network(
-                sp["hinhAnh"],
+                hinh,
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
               ),
-              title: Text(sp["Ten"] ?? ""),
-              subtitle: Text("Giá: ${sp["Gia"]}"),
+              title: Text(ten),
+              subtitle: Text("Giá: ${gia.toStringAsFixed(0)} đ"),
             ),
           ),
         );

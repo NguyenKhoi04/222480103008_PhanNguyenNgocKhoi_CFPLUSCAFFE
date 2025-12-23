@@ -30,9 +30,7 @@ class _SearchResultPageState extends State<SearchResultPage> {
             padding: const EdgeInsets.all(8),
             child: TextField(
               controller: searchController,
-              onChanged: (value) {
-                timKiemSanPham(value);
-              },
+              onChanged: timKiemSanPham,
               decoration: const InputDecoration(
                 hintText: 'Nhập tên sản phẩm...',
                 prefixIcon: Icon(Icons.search),
@@ -60,11 +58,13 @@ class _SearchResultPageState extends State<SearchResultPage> {
     );
   }
 
-  /// ===============================
-  /// TÌM KIẾM GIỐNG HỆT JAVA
-  /// ===============================
+  // ===============================
+  // TÌM KIẾM FIRESTORE (AN TOÀN)
+  // ===============================
   Future<void> timKiemSanPham(String keyword) async {
-    if (keyword.trim().isEmpty) {
+    keyword = keyword.trim();
+
+    if (keyword.isEmpty) {
       setState(() => sanPhamList.clear());
       return;
     }
@@ -74,42 +74,47 @@ class _SearchResultPageState extends State<SearchResultPage> {
     try {
       sanPhamList.clear();
 
-      // Lấy root collection "SanPham"
+      // Lấy các document gốc trong SanPham (CaFe, Matcha, ...)
       final rootCats = await db.collection('SanPham').get();
 
-      List<Future<QuerySnapshot>> tasks = [];
-
       for (var catDoc in rootCats.docs) {
-        final catId = catDoc.id; // CaFe, Matcha...
-        tasks.add(
-          db
-              .collection('SanPham')
-              .doc(catId)
-              .collection(catId)
-              .get(),
-        );
-      }
+        final catId = catDoc.id;
 
-      // Chờ tất cả sub-collection load xong
-      final results = await Future.wait(tasks);
+        final qs = await db
+            .collection('SanPham')
+            .doc(catId)
+            .collection(catId)
+            .get();
 
-      for (var qs in results) {
         for (var doc in qs.docs) {
-          final ten = doc['Ten'];
+          final data = doc.data();
 
-          if (ten != null &&
-              ten
-                  .toString()
-                  .toLowerCase()
-                  .contains(keyword.toLowerCase())) {
-            sanPhamList.add(
-              SanPham(
-                ten: ten,
-                gia: doc['Gia'] ?? '',
-                hinh: doc['hinhAnh'] ?? '',
-              ),
-            );
-          }
+          // -------- TÊN --------
+          if (!data.containsKey('Ten')) continue;
+
+          final String ten = data['Ten'].toString();
+
+          if (!ten.toLowerCase().contains(keyword.toLowerCase())) continue;
+
+          // -------- GIÁ (AN TOÀN) --------
+          final rawGia = data['Gia'];
+          final double gia = rawGia is num
+              ? rawGia.toDouble()
+              : double.tryParse(
+                      rawGia.toString().replaceAll(RegExp(r'[^0-9]'), '')) ??
+                  0;
+
+          // -------- HÌNH --------
+          final String hinh =
+              data.containsKey('hinhAnh') ? data['hinhAnh'] : '';
+
+          sanPhamList.add(
+            SanPham(
+              ten: ten,
+              gia: gia,
+              hinh: hinh,
+            ),
+          );
         }
       }
 

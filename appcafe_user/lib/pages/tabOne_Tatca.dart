@@ -55,44 +55,53 @@ class _TabOneTatCaState extends State<TabOneTatCa> {
 
   // Load danh mục sản phẩm
   Widget buildCategory(String root, String docName, String collectionName) {
-    return SizedBox(
-      height: 220,
-      child: FutureBuilder(
-        future: db
-            .collection(root)
-            .doc(docName)
-            .collection(collectionName)
-            .get(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-         }
+  return SizedBox(
+    height: 220,
+    child: FutureBuilder<QuerySnapshot>(
+      future: db
+          .collection(root)
+          .doc(docName)
+          .collection(collectionName)
+          .get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          final data = snapshot.data!.docs;
+        final data = snapshot.data!.docs;
 
-          return ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: data.length,
-            itemBuilder: (context, i) {
-              final item = data[i];
-              final ten = item['Ten'];
-              final gia = item['Gia'];
-              final hinh = item['hinhAnh'];
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: data.length,
+          itemBuilder: (context, i) {
+            final item = data[i];
 
-              return productCard(
-                ten: ten,
-                gia: gia,
-                hinh: hinh,
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
+            final String ten = item['Ten'] as String;
+            final String hinh = item['hinhAnh'] as String;
+
+            final rawGia = item['Gia'];
+            final double gia = rawGia is num
+                ? rawGia.toDouble()
+                : double.tryParse(
+                        rawGia.toString().replaceAll(RegExp(r'[^0-9]'), '')) ??
+                    0;
+
+            return productCard(
+              ten: ten,
+              gia: gia,
+              hinh: hinh,
+            );
+          },
+        );
+      },
+    ),
+  );
+}
+
+
 
   // Card sản phẩm
-  Widget productCard({required String ten, required String gia, required String hinh}) {
+  Widget productCard({required String ten, required double gia, required String hinh}) {
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -115,7 +124,7 @@ class _TabOneTatCaState extends State<TabOneTatCa> {
               child: Image.network(
                 hinh,
                 width: 150,
-                height: 150,
+                height: 130,
                 fit: BoxFit.cover,
               ),
             ),
