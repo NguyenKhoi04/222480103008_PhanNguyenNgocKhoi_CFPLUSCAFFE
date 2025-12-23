@@ -124,7 +124,18 @@ class _DonHangWidgetState extends State<DonHangWidget> {
 
                 // 🔄 Update UI
                 setState(() {
-                  widget.list[index].trangThai = newStatus;
+                  final updatedDonHang = DonHang(
+                    tenBan: donHang.tenBan,
+                    tenSanPham: donHang.tenSanPham,
+                    size: donHang.size,
+                    mucDa: donHang.mucDa,
+                    soLuong: donHang.soLuong,
+                    tongTien: donHang.tongTien,
+                    hinhThuc: donHang.hinhThuc,
+                    hinhAnh: donHang.hinhAnh,
+                    trangThai: newStatus,
+                  );
+                  widget.list[index] = updatedDonHang;
                 });
 
                   Navigator.pop(context);
