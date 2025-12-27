@@ -29,7 +29,14 @@ class _SuaThongTinCaNhanState extends State<SuaThongTinCaNhan> {
 
     if (user != null) {
       edtEmail.text = user.email ?? "";
-      nhanVienRef = db.collection("Người dùng").doc("Nhân viên");
+      
+      // --- CẬP NHẬT ĐƯỜNG DẪN TẠI ĐÂY ---
+      // Trỏ đúng vào document của User đang đăng nhập trong collection Khách hàng
+      nhanVienRef = db.collection("Người dùng")
+          .doc("Nhân Viên")
+          .collection("Khách hàng")
+          .doc(user.uid); 
+          
       loadData();
     }
   }
@@ -38,18 +45,27 @@ class _SuaThongTinCaNhanState extends State<SuaThongTinCaNhan> {
   // Load dữ liệu từ Firestore
   // -----------------------------
   void loadData() async {
-    var doc = await nhanVienRef.get();
-    if (doc.exists) {
-      setState(() {
-        edtHoTen.text = doc["Họ tên NV"] ?? "";
-        edtGioiTinh.text = doc["Giới tính"] ?? "";
-        edtSoDienThoai.text = doc["Số điện thoại"] ?? "";
+    try {
+      var doc = await nhanVienRef.get();
+      if (doc.exists && mounted) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        
+        setState(() {
+          // Kiểm tra null safety khi get dữ liệu
+          edtHoTen.text = data["Họ tên NV"] ?? ""; 
+          edtGioiTinh.text = data["Giới tính"] ?? "";
+          edtSoDienThoai.text = data["Số điện thoại"] ?? "";
 
-        var ngaySinh = doc["Ngày sinh"];
-        if (ngaySinh is Timestamp) {
-          edtNgaySinh.text = DateFormat("dd/MM/yyyy").format(ngaySinh.toDate());
-        }
-      });
+          var ngaySinh = data["Ngày sinh"];
+          if (ngaySinh != null && ngaySinh is Timestamp) {
+            edtNgaySinh.text = DateFormat("dd/MM/yyyy").format(ngaySinh.toDate());
+          } else if (ngaySinh != null) {
+            edtNgaySinh.text = ngaySinh.toString();
+          }
+        });
+      }
+    } catch (e) {
+      print("Lỗi load data: $e");
     }
   }
 
@@ -58,77 +74,83 @@ class _SuaThongTinCaNhanState extends State<SuaThongTinCaNhan> {
   // -----------------------------
   void saveData() async {
     try {
-      DateTime parsedDate =
-          DateFormat("dd/MM/yyyy").parse(edtNgaySinh.text.trim());
+      // Parse ngày sinh
+      DateTime parsedDate = DateFormat("dd/MM/yyyy").parse(edtNgaySinh.text.trim());
 
       Map<String, dynamic> data = {
         "Họ tên NV": edtHoTen.text.trim(),
         "Giới tính": edtGioiTinh.text.trim(),
-        "Email": edtEmail.text.trim(),
+        "Email": edtEmail.text.trim(), // Lưu email để đồng bộ thông tin
         "Số điện thoại": edtSoDienThoai.text.trim(),
         "Ngày sinh": parsedDate,
       };
 
-      await nhanVienRef.set(data);
+      // Dùng SetOptions(merge: true) để không bị mất các trường khác (nếu có)
+      await nhanVienRef.set(data, SetOptions(merge: true));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Cập nhật thành công!")),
-      );
-
-      Navigator.pop(context);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Cập nhật thành công!")),
+        );
+        Navigator.pop(context); // Quay về trang trước
+      }
 
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Định dạng ngày không đúng!")),
-      );
+      print(e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Lỗi: Định dạng ngày không đúng hoặc lỗi mạng!")),
+        );
+      }
     }
   }
 
   // -----------------------------
-  // Giao diện
+  // Giao diện (GIỮ NGUYÊN)
   // -----------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Sửa thông tin cá nhân"),
+        title: const Text("Sửa thông tin cá nhân"),
         backgroundColor: Colors.brown,
+        foregroundColor: Colors.white, // Thêm màu chữ trắng cho đẹp
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
 
             buildInput("Họ tên", edtHoTen),
             buildInput("Ngày sinh (dd/mm/yyyy)", edtNgaySinh),
             buildInput("Giới tính", edtGioiTinh),
-            buildInput("Email", edtEmail, enabled: false),
+            buildInput("Email", edtEmail, enabled: false), // Email thường không cho sửa
             buildInput("Số điện thoại", edtSoDienThoai),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             ElevatedButton(
               onPressed: saveData,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.brown,
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
               ),
-              child: Text(
+              child: const Text(
                 "Lưu thay đổi",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
               ),
             ),
 
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
 
             GestureDetector(
               onTap: () => Navigator.pop(context),
               child: Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 color: const Color(0xFF6D4C41),
-                child: Text(
-                  "Trở về trang thông tin nhân viên",
+                child: const Text(
+                  "Trở về trang thông tin", // Sửa nhẹ text cho phù hợp
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 18,
@@ -153,15 +175,15 @@ class _SuaThongTinCaNhanState extends State<SuaThongTinCaNhan> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          SizedBox(height: 6),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
           TextField(
             controller: controller,
             enabled: enabled,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
-              contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+              contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

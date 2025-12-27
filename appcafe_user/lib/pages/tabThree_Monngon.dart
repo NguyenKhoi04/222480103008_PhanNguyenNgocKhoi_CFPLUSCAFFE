@@ -42,7 +42,7 @@ class _TabThreeMonngonState extends State<TabThreeMonngon> {
       future: db
           .collection("SanPham")
           .doc("Món ngon")
-          .collection("Món ngon")
+          .collection("Monngon")
           .get(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {

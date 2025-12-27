@@ -1,15 +1,14 @@
 class DonHang {
-  final String id; // documentId
-  final String tenBan;
-  final String tenSanPham;
-  final String size;
-  final String mucDa;
-  final String hinhThuc;
-  final String trangThai;
-  final String hinhAnh;
-  final int soLuong;
-  final int tongTien;
-  final int giaDonVi; // Giá đơn vị để tính toán lại tongTien
+  String id;
+  String tenBan;
+  String tenSanPham;
+  String size;
+  String mucDa;
+  int soLuong;
+  int tongTien;
+  String hinhThuc;
+  String hinhAnh;
+  String trangThai;
 
   DonHang({
     required this.id,
@@ -20,39 +19,63 @@ class DonHang {
     required this.soLuong,
     required this.tongTien,
     required this.hinhThuc,
-    required this.trangThai,
     required this.hinhAnh,
-    required this.giaDonVi,
+    required this.trangThai,
   });
 
-  factory DonHang.fromFirestore(String id, Map<String, dynamic> json) {
-    return DonHang(
-      id: id,
-      tenBan: json['tenBan'] ?? json['Tên bàn'] ?? '',
-      tenSanPham: json['tenSanPham'] ?? json['Tên sản phẩm'] ?? '',
-      size: json['size'] ?? json['Size'] ?? '',
-      mucDa: json['mucDa'] ?? json['Mức đá'] ?? '',
-      soLuong: json['soLuong'] ?? json['Số lượng'] ?? 0,
-      tongTien: json['tongTien'] ?? json['Tổng tiền'] ?? 0,
-      hinhThuc: json['hinhThuc'] ?? json['hình thức'] ?? '',
-      trangThai: json['trangthaiThanhToan'] ?? 'Chưa thanh toán',
-      hinhAnh: json['hinhAnh'] ?? json['hinhAnh'] ?? '',
-      giaDonVi: json['giaDonVi'] ?? json['Giá'] ?? 0,
-    );
+  // 🔥 THÊM: Getter để lấy giá đơn vị (Giá 1 ly)
+  // Logic: Nếu số lượng > 0 thì chia, ngược lại thì bằng 0 để tránh lỗi chia cho 0
+  int get giaDonVi {
+    if (soLuong > 0) {
+      return (tongTien / soLuong).round();
+    }
+    return 0;
   }
 
-  Map<String, dynamic> toFirestore() {
-    return {
-      'tenBan': tenBan,
-      'tenSanPham': tenSanPham,
-      'size': size,
-      'mucDa': mucDa,
-      'soLuong': soLuong,
-      'tongTien': tongTien,
-      'hinhThuc': hinhThuc,
-      'trangthaiThanhToan': trangThai,
-      'hinhAnh': hinhAnh,
-      'giaDonVi': giaDonVi,
-    };
+  factory DonHang.fromFirestore(String id, Map<String, dynamic> data) {
+    // 🔥 FIX: Parse soLuong chính xác
+    final soLuongRaw = data['soLuong'];
+    int soLuongParsed = 0;
+
+    if (soLuongRaw is int) {
+      soLuongParsed = soLuongRaw;
+    } else if (soLuongRaw is String) {
+      soLuongParsed = int.tryParse(soLuongRaw) ?? 0;
+    } else if (soLuongRaw is double) {
+      soLuongParsed = soLuongRaw.toInt();
+    }
+
+    // 🔥 FIX: Parse tongTien chính xác
+    final tongTienRaw = data['tongTien'];
+    int tongTienParsed = 0;
+
+    if (tongTienRaw is int) {
+      tongTienParsed = tongTienRaw;
+    } else if (tongTienRaw is String) {
+      tongTienParsed = int.tryParse(tongTienRaw) ?? 0;
+    } else if (tongTienRaw is double) {
+      tongTienParsed = tongTienRaw.toInt();
+    }
+
+    print('🔍 DEBUG DonHang.fromFirestore:');
+    print('  ID: $id');
+    print(
+        '  soLuong: $soLuongParsed (raw: $soLuongRaw, type: ${soLuongRaw.runtimeType})');
+    print(
+        '  tongTien: $tongTienParsed (raw: $tongTienRaw, type: ${tongTienRaw.runtimeType})');
+
+    return DonHang(
+      id: id,
+      tenBan: data['tenBan'] ?? '',
+      tenSanPham: data['tenSanPham'] ?? '',
+      size: data['size'] ?? '',
+      mucDa: data['mucDa'] ?? '',
+      soLuong: soLuongParsed,
+      tongTien: tongTienParsed,
+      hinhThuc: data['hinhThuc'] ?? '',
+      hinhAnh: data['hinhAnh'] ?? '',
+      trangThai:
+          data['trangThai'] ?? data['trangThaiThanhToan'] ?? 'Chưa thanh toán',
+    );
   }
 }

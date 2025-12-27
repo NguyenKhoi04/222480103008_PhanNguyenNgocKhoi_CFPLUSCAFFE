@@ -27,30 +27,36 @@ class _FragmentAccountState extends State<FragmentAccount> {
   void loadData() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      setState(() {
-        isLoading = false;
-        email = "";
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          email = "";
+        });
+      }
       return;
     }
 
     setState(() => isLoading = true);
 
     try {
+      // --- SỬA ĐỔI ĐƯỜNG DẪN TẠI ĐÂY ---
       final doc = await FirebaseFirestore.instance
-          .collection("Người dùng")
-          .doc("Nhân viên")
+          .collection("Người dùng")       // Collection cha
+          .doc("Nhân Viên")               // Document danh mục
+          .collection("Khách hàng")       // Sub-collection Khách hàng
+          .doc(user.uid)                  // Lấy document theo ID của user đang đăng nhập
           .get()
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 10)); // Tăng timeout lên xíu cho an toàn
 
       if (doc.exists && mounted) {
         setState(() {
-          hoTen = doc.get("Họ tên NV") ?? "";
+          // Lưu ý: Đảm bảo tên field (trường) trong Firestore khớp chính xác với chuỗi bên dưới
+          hoTen = doc.get("Họ tên NV") ?? ""; // Có thể bạn cần đổi thành "Họ tên KH" tùy database
           gioiTinh = doc.get("Giới tính") ?? "";
-          email = doc.get("Email") ?? user.email ?? "";
+          email = doc.data()!.containsKey("Email") ? doc.get("Email") : (user.email ?? "");
           soDienThoai = doc.get("Số điện thoại") ?? "";
 
-          var ngaySinhData = doc.get("Ngày sinh");
+          var ngaySinhData = doc.data()!.containsKey("Ngày sinh") ? doc.get("Ngày sinh") : null;
           if (ngaySinhData != null) {
             if (ngaySinhData is Timestamp) {
               ngaySinh = DateFormat("dd/MM/yyyy").format(ngaySinhData.toDate());
@@ -61,10 +67,12 @@ class _FragmentAccountState extends State<FragmentAccount> {
           isLoading = false;
         });
       } else if (mounted) {
+        // Trường hợp đăng nhập thành công nhưng chưa có dữ liệu trong Firestore
         setState(() {
           email = user.email ?? "";
           isLoading = false;
         });
+        print("Không tìm thấy document cho user: ${user.uid} tại đường dẫn này.");
       }
     } catch (e) {
       print("Lỗi load data: $e");
@@ -96,7 +104,7 @@ class _FragmentAccountState extends State<FragmentAccount> {
               padding: const EdgeInsets.all(12),
               color: const Color(0xFFFFEEDB),
               child: const Text(
-                "THÔNG TIN NHÂN VIÊN",
+                "THÔNG TIN KHÁCH HÀNG", // Đã sửa tiêu đề cho phù hợp context
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 24,
@@ -107,22 +115,14 @@ class _FragmentAccountState extends State<FragmentAccount> {
 
             const SizedBox(height: 20),
 
-            // --- Họ tên ---
+            // --- Các trường thông tin ---
             _buildInfoRow("Họ Tên:", hoTen.isEmpty ? "Chưa cập nhật" : hoTen),
-
-            // --- Ngày sinh ---
             const SizedBox(height: 10),
             _buildInfoRow("Ngày sinh:", ngaySinh.isEmpty ? "Chưa cập nhật" : ngaySinh),
-
-            // --- Giới tính ---
             const SizedBox(height: 10),
             _buildInfoRow("Giới tính:", gioiTinh.isEmpty ? "Chưa cập nhật" : gioiTinh),
-
-            // --- Email ---
             const SizedBox(height: 10),
             _buildInfoRow("Email:", email.isEmpty ? "Chưa cập nhật" : email),
-
-            // --- Số điện thoại ---
             const SizedBox(height: 10),
             _buildInfoRow("Số điện thoại:", soDienThoai.isEmpty ? "Chưa cập nhật" : soDienThoai),
 
@@ -137,7 +137,7 @@ class _FragmentAccountState extends State<FragmentAccount> {
                 ),
                 onPressed: () async {
                   await Navigator.pushNamed(context, '/suaThongTin');
-                  loadData(); // Reload sau khi sửa
+                  loadData(); 
                 },
                 child: const Text(
                   "SỬA THÔNG TIN CÁ NHÂN",

@@ -5,6 +5,7 @@ import 'package:appcafe_user/pages/fragment_account.dart';
 import 'package:appcafe_user/pages/fragment_history.dart';
 import 'package:appcafe_user/pages/fragment_home.dart';
 import 'package:appcafe_user/pages/fragment_setting.dart';
+import 'package:appcafe_user/pages/chat_user.dart';
 
 class TrangChu extends StatefulWidget {
   const TrangChu({super.key});
@@ -28,13 +29,18 @@ class _TrangChuState extends State<TrangChu> {
     _loadUserName();
   }
 
-  // ================================
-  // 🔥 LẤY "Họ tên NV" từ Firestore
+  /// ================================
+  // 🔥 LẤY "Họ tên KH" từ Firestore
+  // Path: /Người dùng/Nhân viên/KhacHang/{uid}
   // ================================
   Future<void> _loadUserName() async {
     User? user = FirebaseAuth.instance.currentUser;
+    
+    // Nếu chưa đăng nhập
     if (user == null) {
-      setState(() => tenNhanVien = "Xin chào!");
+      if (mounted) {
+        setState(() => tenNhanVien = "Xin chào quý khách!");
+      }
       return;
     }
 
@@ -42,27 +48,38 @@ class _TrangChuState extends State<TrangChu> {
       final doc = await FirebaseFirestore.instance
           .collection("Người dùng")
           .doc("Nhân viên")
+          .collection("KhacHang")
+          .doc(user.uid)
           .get()
           .timeout(const Duration(seconds: 5));
 
       if (doc.exists && mounted) {
-        String? email = doc.get("Email");
-        String? hoTen = doc.get("Họ tên NV");
+        final data = doc.data(); // Lấy dữ liệu dạng Map
+        
+        // Kiểm tra xem field "Họ tên KH" có tồn tại và có dữ liệu không
+        if (data != null && data.containsKey("Họ tên KH")) {
+          String hoTen = data["Họ tên KH"].toString();
 
-        if (email == user.email && hoTen != null && hoTen.isNotEmpty) {
-          setState(() {
-            tenNhanVien = "Xin chào, $hoTen";
-          });
+          if (hoTen.isNotEmpty) {
+            setState(() {
+              // ✅ ĐÚNG YÊU CẦU: Thêm "quý khách" và dấu "!"
+              tenNhanVien = "Xin chào quý khách, $hoTen !"; 
+            });
+          } else {
+            setState(() => tenNhanVien = "Xin chào quý khách!");
+          }
         } else {
-          setState(() => tenNhanVien = "Xin chào!");
+          // Có doc nhưng không có field tên
+          setState(() => tenNhanVien = "Xin chào quý khách!");
         }
-      } else if (mounted) {
-        setState(() => tenNhanVien = "Xin chào!");
+      } else {
+        // Không tìm thấy document
+        if (mounted) setState(() => tenNhanVien = "Xin chào quý khách!");
       }
     } catch (e) {
-      if (mounted) {
-        setState(() => tenNhanVien = "Xin chào!");
-      }
+      // Lỗi kết nối hoặc lỗi khác
+      if (mounted) setState(() => tenNhanVien = "Xin chào quý khách!");
+      debugPrint("Lỗi lấy tên khách hàng: $e");
     }
   }
 
@@ -155,10 +172,22 @@ class _TrangChuState extends State<TrangChu> {
 
       // ================= BOTTOM NAV ==================
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex.clamp(0, 4),
         selectedItemColor: Colors.brown,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
+          // Nếu tap vào Chat (index 4)
+          if (index == 4) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ChatUserScreen(),
+              ),
+            );
+            return;
+          }
+          
           setState(() {
             _currentIndex = index;
             showFrame = false;
@@ -171,6 +200,7 @@ class _TrangChuState extends State<TrangChu> {
           BottomNavigationBarItem(icon: Icon(Icons.history), label: "History"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Account"),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Setting"),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Chat"),
         ],
       ),
     );

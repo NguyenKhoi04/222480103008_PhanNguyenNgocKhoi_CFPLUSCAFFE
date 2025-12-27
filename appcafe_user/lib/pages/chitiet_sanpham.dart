@@ -34,9 +34,9 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
 
   String formatTien(int tien) {
     return tien.toString().replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => '.',
-    );
+          RegExp(r'\B(?=(\d{3})+(?!\d))'),
+          (match) => '.',
+        );
   }
 
   @override
@@ -60,9 +60,7 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                 fit: BoxFit.cover,
               ),
             ),
-
             const SizedBox(height: 15),
-
             Text(
               widget.ten,
               style: const TextStyle(
@@ -71,9 +69,7 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                   color: Colors.brown),
               textAlign: TextAlign.center,
             ),
-
             const SizedBox(height: 20),
-
             _buildBlock(
               title: "Chọn Size",
               child: Column(
@@ -84,9 +80,7 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                 ],
               ),
             ),
-
             const SizedBox(height: 20),
-
             _buildBlock(
               title: "Chọn mức đá",
               child: Column(
@@ -98,9 +92,7 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                 ],
               ),
             ),
-
             const SizedBox(height: 20),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -144,9 +136,7 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                 )
               ],
             ),
-
             const SizedBox(height: 20),
-
             _button(
               text: "Thêm vào giỏ hàng",
               onTap: () {
@@ -160,9 +150,7 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                 _showThongTinDialog();
               },
             ),
-
             const SizedBox(height: 12),
-
             _button(
               text: "Trở về trang chủ",
               onTap: () => Navigator.pop(context),
@@ -232,94 +220,161 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
     );
   }
 
-  // ================= DIALOG + FIRESTORE =================
+ // ================= DIALOG + FIRESTORE =================
 
   void _showThongTinDialog() {
     final editBan = TextEditingController();
     final editSdt = TextEditingController();
     final editNv = TextEditingController();
-    String hinhThuc = "Mang về";
+    
+    // 🔥 SỬA LỖI: Khai báo biến này Ở NGOÀI StatefulBuilder
+    String hinhThuc = "Mang về"; 
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Thông tin đặt"),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                  controller: editBan,
-                  decoration:
-                      const InputDecoration(labelText: "Tên bàn")),
-              TextField(
-                  controller: editSdt,
-                  decoration:
-                      const InputDecoration(labelText: "Số điện thoại")),
-              TextField(
-                  controller: editNv,
-                  decoration:
-                      const InputDecoration(labelText: "Tên nhân viên")),
-              const SizedBox(height: 10),
-              RadioListTile(
-                title: const Text("Mang về"),
-                value: "Mang về",
-                groupValue: hinhThuc,
-                onChanged: (v) => hinhThuc = v!,
+      builder: (_) => StatefulBuilder(
+        builder: (context, setState) {
+          // KHÔNG ĐƯỢC khai báo hinhThuc ở đây
+
+          return AlertDialog(
+            title: const Text("Thông tin đặt"),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: editBan,
+                    decoration: const InputDecoration(
+                      labelText: "Tên bàn",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: editSdt,
+                    decoration: const InputDecoration(
+                      labelText: "Số điện thoại",
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: editNv,
+                    decoration: const InputDecoration(
+                      labelText: "Tên nhân viên",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Hình thức đặt:",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.brown,
+                      ),
+                    ),
+                  ),
+                  
+                  // Radio Button 1: Mang về
+                  RadioListTile<String>(
+                    title: const Text("Mang về"),
+                    value: "Mang về",
+                    groupValue: hinhThuc,
+                    onChanged: (v) {
+                      setState(() {
+                        hinhThuc = v!;
+                      });
+                    },
+                  ),
+                  
+                  // Radio Button 2: Tại chỗ
+                  RadioListTile<String>(
+                    title: const Text("Tại chỗ"),
+                    value: "Tại chỗ",
+                    groupValue: hinhThuc,
+                    onChanged: (v) {
+                      setState(() {
+                        hinhThuc = v!;
+                      });
+                    },
+                  ),
+                ],
               ),
-              RadioListTile(
-                title: const Text("Tại chỗ"),
-                value: "Tại chỗ",
-                groupValue: hinhThuc,
-                onChanged: (v) => hinhThuc = v!,
+            ),
+            actions: [
+              TextButton(
+                child: const Text("Hủy"),
+                onPressed: () => Navigator.pop(context),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown,
+                ),
+                onPressed: () async {
+                  if (editBan.text.isEmpty ||
+                      editSdt.text.isEmpty ||
+                      editNv.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Điền đầy đủ thông tin")),
+                    );
+                    return;
+                  }
+
+                  try {
+                    // 🔥 LƯU Ý: Kiểm tra lại tên Collection cho khớp với code hiển thị
+                    // Nếu bên hiển thị bạn dùng "DonHang" thì ở đây cũng phải là "DonHang"
+                    final docRef = await FirebaseFirestore.instance
+                        .collection("DonHang") // Khuyên dùng không dấu
+                        .doc("GioHang")
+                        .collection("SanPham") // Khuyên dùng không dấu
+                        .add({
+                      "tenBan": editBan.text,
+                      "soDienThoai": editSdt.text,
+                      "tenNhanVien": editNv.text,
+                      "hinhThuc": hinhThuc, // Giá trị này giờ sẽ đúng
+                      "tenSanPham": widget.ten, // Đảm bảo widget.ten có dữ liệu
+                      "soLuong": soLuong,       // Đảm bảo biến soLuong có dữ liệu
+                      "size": selectedSize,     // Đảm bảo biến selectedSize có dữ liệu
+                      "mucDa": selectedIce,     // Đảm bảo biến selectedIce có dữ liệu
+                      "gia": giaSanPham,        // Đảm bảo biến giaSanPham có dữ liệu
+                      "tongTien": tongTien,     // Đảm bảo biến tongTien có dữ liệu
+                      "hinhAnh": widget.hinhAnh,
+                      "trangThaiThanhToan": "Chưa thanh toán",
+                      "trangThai": "Đang chờ",
+                      "thoiGian": Timestamp.now(),
+                    });
+
+                    if (mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Thêm vào giỏ thành công!"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      // Đóng màn hình chi tiết sản phẩm sau khi thêm xong (nếu cần)
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                         if(mounted) Navigator.pop(context);
+                      });
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Lỗi: $e")),
+                    );
+                  }
+                },
+                child: const Text(
+                  "Thêm",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            child: const Text("Hủy"),
-            onPressed: () => Navigator.pop(context),
-          ),
-          TextButton(
-            child: const Text("Thêm"),
-            onPressed: () async {
-              if (editBan.text.isEmpty ||
-                  editSdt.text.isEmpty ||
-                  editNv.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Điền đầy đủ thông tin")),
-                );
-                return;
-              }
-
-              await FirebaseFirestore.instance
-                  .collection("DonHang")
-                  .doc("GioHang")
-                  .collection("SanPham")
-                  .add({
-                "tenBan": editBan.text,
-                "soDienThoai": editSdt.text,
-                "tenNhanVien": editNv.text,
-                "hinhThuc": hinhThuc,
-                "tenSanPham": widget.ten,
-                "soLuong": soLuong,
-                "size": selectedSize,
-                "mucDa": selectedIce,
-                "gia": giaSanPham,
-                "tongTien": tongTien,
-                "hinhAnh": widget.hinhAnh,
-                "trangThaiThanhToan": "Chưa thanh toán",
-                "thoiGian": Timestamp.now(),
-              });
-
-              Navigator.pop(context);
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Thêm vào giỏ thành công!")),
-              );
-            },
-          ),
-        ],
+          );
+        },
       ),
     );
   }
