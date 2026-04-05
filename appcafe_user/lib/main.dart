@@ -4,12 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Đảm bảo các file này tồn tại trong dự án của bạn
 import 'package:appcafe_user/pages/fragment_account.dart';
-import 'package:appcafe_user/pages/fragment_history.dart';
-import 'package:appcafe_user/pages/fragment_home.dart';
 import 'package:appcafe_user/pages/fragment_setting.dart';
 import 'package:appcafe_user/pages/trangchu.dart';
 import 'package:appcafe_user/pages/trang_dangky.dart';

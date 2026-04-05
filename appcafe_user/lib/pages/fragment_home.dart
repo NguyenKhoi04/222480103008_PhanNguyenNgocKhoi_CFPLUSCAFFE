@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:appcafe_user/pages/tabOne_Tatca.dart';
 import 'package:appcafe_user/pages/tabTwo_BestSeller.dart';
 import 'package:appcafe_user/pages/tabThree_Monngon.dart';
-import 'chitiet_sanpham.dart';
 import 'chitiet_tintuc.dart';
 
 class FragmentHome extends StatefulWidget {
