@@ -7,7 +7,7 @@ class ChiTietSanPham extends StatefulWidget {
   final String ten;
   final double gia;
   final String hinhAnh;
-  final int categoryId;
+  final String categoryName;
 
   static const routeName = "/chitiet_sanpham";
 
@@ -16,7 +16,7 @@ class ChiTietSanPham extends StatefulWidget {
     required this.ten,
     required this.gia,
     required this.hinhAnh,
-    required this.categoryId,
+    required this.categoryName,
   });
 
 
@@ -46,10 +46,13 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
         );
   }
 
-  bool get isExtraProduct => 
-      widget.categoryId == 9 || widget.categoryId == 10;
-      
+  bool get isExtraProduct {
+  final name = widget.categoryName.toLowerCase().trim();
+  return name.contains("topping") || name.contains("hat goi");
+}
+
   @override
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
