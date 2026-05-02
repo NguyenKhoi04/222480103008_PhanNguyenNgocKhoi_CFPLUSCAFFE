@@ -149,6 +149,9 @@ class MyApp extends StatelessWidget {
           if (args != null) {
             return MaterialPageRoute(
               builder: (_) => ChiTietSanPham(
+                categoryId: args['categoryId'] ??
+                    args['CategoryId'] ??
+                    0,
                 ten: args['ten'] ??
                     args['Ten'] ??
                     '',

@@ -1,17 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChiTietSanPham extends StatefulWidget {
   final String ten;
   final double gia;
   final String hinhAnh;
+  final int categoryId;
+
+  static const routeName = "/chitiet_sanpham";
 
   const ChiTietSanPham({
     super.key,
     required this.ten,
     required this.gia,
     required this.hinhAnh,
+    required this.categoryId,
   });
+
 
   @override
   State<ChiTietSanPham> createState() => _ChiTietSanPhamState();
@@ -39,6 +46,9 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
         );
   }
 
+  bool get isExtraProduct => 
+      widget.categoryId == 9 || widget.categoryId == 10;
+      
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,29 +79,33 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                   color: Colors.brown),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
-            _buildBlock(
-              title: "Chọn Size",
-              child: Column(
-                children: [
-                  _radioSize("S"),
-                  _radioSize("M"),
-                  _radioSize("L"),
-                ],
+            if (!isExtraProduct) ...[
+              const SizedBox(height: 20),
+              _buildBlock(
+                title: "Chọn Size",
+                child: Column(
+                  children: [
+                    _radioSize("S"),
+                    _radioSize("M"),
+                    _radioSize("L"),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            _buildBlock(
-              title: "Chọn mức đá",
-              child: Column(
-                children: [
-                  _radioIce("Đá bình thường"),
-                  _radioIce("Ít đá"),
-                  _radioIce("Đá riêng"),
-                  _radioIce("Không đá"),
-                ],
+            ],
+           if (!isExtraProduct) ...[
+              const SizedBox(height: 20),
+              _buildBlock(
+                title: "Chọn mức đá",
+                child: Column(
+                  children: [
+                    _radioIce("Đá bình thường"),
+                    _radioIce("Ít đá"),
+                    _radioIce("Đá riêng"),
+                    _radioIce("Không đá"),
+                  ],
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -140,7 +154,7 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
             _button(
               text: "Thêm vào giỏ hàng",
               onTap: () {
-                if (selectedSize == null || selectedIce == null) {
+                if (!isExtraProduct && (selectedSize == null || selectedIce == null)) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                         content: Text("Vui lòng chọn size và mức đá")),
@@ -338,8 +352,8 @@ class _ChiTietSanPhamState extends State<ChiTietSanPham> {
                       "hinhThuc": hinhThuc, // Giá trị này giờ sẽ đúng
                       "tenSanPham": widget.ten, // Đảm bảo widget.ten có dữ liệu
                       "soLuong": soLuong,       // Đảm bảo biến soLuong có dữ liệu
-                      "size": selectedSize,     // Đảm bảo biến selectedSize có dữ liệu
-                      "mucDa": selectedIce,     // Đảm bảo biến selectedIce có dữ liệu
+                      "size": isExtraProduct ? "" :selectedSize,     // Đảm bảo biến selectedSize có dữ liệu
+                      "mucDa":isExtraProduct ? "" : selectedIce,     // Đảm bảo biến selectedIce có dữ liệu
                       "gia": giaSanPham,        // Đảm bảo biến giaSanPham có dữ liệu
                       "tongTien": tongTien,     // Đảm bảo biến tongTien có dữ liệu
                       "hinhAnh": widget.hinhAnh,

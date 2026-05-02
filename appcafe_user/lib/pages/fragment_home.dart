@@ -169,9 +169,9 @@ class _FragmentHomeState extends State<FragmentHome>
           Expanded(
             child: StreamBuilder<List<Map<String, dynamic>>>(
               stream: supabase
-                  .from('news')
-                  .stream(primaryKey: ['id'])
-                  .order('id', ascending: false),
+                .from('news')
+                .stream(primaryKey: ['id'])
+                .order('updated_at', ascending: false),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(
@@ -194,14 +194,11 @@ class _FragmentHomeState extends State<FragmentHome>
                   itemBuilder: (context, index) {
                     final tin = data[index];
 
-                    final title =
-                        tin['title'] ?? 'Không có tựa đề';
-                    final image =
-                        tin['image_url'] ?? '';
-                    final content =
-                        tin['content'] ?? '';
-                    final summary =
-                        tin['summary'] ?? content;
+                    final title = tin['title'] ?? 'Không có tiêu đề';
+                    final image = tin['image_url'] ?? '';
+                    final content = tin['content'] ?? '';
+                    final summary = tin['summary'] ?? content;
+                    final updatedAt = tin['updated_at'] ?? '';
 
                     return GestureDetector(
                       onTap: () {
@@ -209,11 +206,12 @@ class _FragmentHomeState extends State<FragmentHome>
                           context,
                           MaterialPageRoute(
                             builder: (_) => ChitietTinTuc(
-                              hinhAnh: image,
-                              tuaDe: title,
-                              tomTat: summary,
-                              noiDung: content,
-                            ),
+                        hinhAnh: image,
+                        tuaDe: title,
+                        tomTat: summary,
+                        noiDung: content,
+                        thoiGian: updatedAt,
+                      ),
                           ),
                         );
                       },
